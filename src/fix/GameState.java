@@ -43,7 +43,6 @@ public class GameState extends State{
     private int contUfoSpawner;
 
     private BlackHole blackHole = null;
-    private final Vector2D livePosition;
     //private PlayerFriend playerFriend;
 
     private final BotonCanvas boton;
@@ -51,7 +50,6 @@ public class GameState extends State{
     {
         player = new Player(null, new Vector2D(),
             Constants.PLAYER_MAX_VEL, Assets.aliados.get(0), this);
-        livePosition = new Vector2D(25, 25);
         /*
         playerFriend = new PlayerFriend(new Vector2D(100,100), new Vector2D(),
             Constants.METEOR_MAX_VEL, Assets.aliados.get(0), this, pati);*/
@@ -78,14 +76,16 @@ public class GameState extends State{
     }
 
     public void addScore(int value, Vector2D position) {
-        Color c = Color.WHITE;
-        String text = "+" + value + " score";
+        Color c;
+        String text = " score";
         if(player.isDoubleScoreOn()) {
             c = Color.YELLOW;
             value = value * 2;
-            text = "+" + value + " score" + " (X2)";
+            text += " (X2)";
+        }else{
+            c = Color.WHITE;      
         }
-
+        text = "+"+value+text;
         score += value;
         messages.add(new Message(position, true, text, c, false, Assets.fontMed));
     }
@@ -541,12 +541,11 @@ public class GameState extends State{
 
         if(lives > 0){
             //dibujamos la nave que simboliza la vida
-            g.drawImage(Assets.life.getImagen(), (int)livePosition.getX(), (int)livePosition.getY(), null);
+            g.drawImage(Assets.life.getImagen(), 25, 25, null);
             //dibujamos la x que simboliza la cantidad
-            g.drawImage(Assets.numbers[10], (int)livePosition.getX() + 40,
-                (int)livePosition.getY() + 5, null);
+            g.drawImage(Assets.numbers[10], 65, 30, null);
 
-            drawNumbers((int)livePosition.getX()+60, (int)livePosition.getY()+5, lives, g);
+            drawNumbers(85, 30, lives, g);
         }
 
     }
