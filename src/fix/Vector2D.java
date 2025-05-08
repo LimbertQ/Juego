@@ -32,6 +32,10 @@ public class Vector2D {
     {
         return new Vector2D(x + v.getX(), y + v.getY());
     }
+    
+    public Vector2D copy(){
+        return new Vector2D(this.x, this.y);
+    }
 
     public Vector2D subtract(Vector2D v)
     {
