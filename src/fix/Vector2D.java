@@ -63,6 +63,11 @@ public class Vector2D {
     {
         return Math.sqrt(x*x + y*y);
     }
+    
+    public double getMagnitudeSq()
+    {
+        return x*x + y*y;
+    }
 
     public Vector2D setDirection(double angle)
     {

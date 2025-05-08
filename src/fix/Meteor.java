@@ -11,60 +11,60 @@ package fix;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-
-
 import io.MeteoroDB;
-public class Meteor extends MovingObject{
 
-    private Size size;    
+public class Meteor extends MovingObject {
+    private Size size;
 
     public Meteor(Vector2D position, Vector2D velocity, double maxVel, MeteoroDB texture, GameState gameState, Size size) {
         super(position, velocity, maxVel, texture, gameState);
         this.size = size;
         this.velocity = velocity.scale(maxVel);
-
     }
 
     @Override
     public void update(float dt) {
-        if(!containsBlackHole()){
+        if (!containsBlackHole()) {
 
-            Vector2D playerPos = new Vector2D(gameState.getPlayer().getCenter());
+            Vector2D center = getCenter();
+            Vector2D playerCenter = gameState.getPlayer().getCenter();
+            double distanceToPlayer = playerCenter.subtract(center).getMagnitude();
 
-            int distanceToPlayer = (int) playerPos.subtract(getCenter()).getMagnitude();
-
-            if(distanceToPlayer < Constants.SHIELD_DISTANCE / 2 + width / 2) {
-
-                if(gameState.getPlayer().isShieldOn()) {
-                    Vector2D fleeForce = fleeForce();
+            // Comprobar si está dentro del rango del escudo
+            double shieldRadius = Constants.SHIELD_DISTANCE * 0.5 + width * 0.5;
+            if (distanceToPlayer < shieldRadius) {
+                if (gameState.getPlayer().isShieldOn()) {
+                    Vector2D fleeForce = fleeForce(center, playerCenter);
                     velocity = velocity.add(fleeForce);
                 }
-
             }
-            if(velocity.getMagnitude() >= this.maxVel) {
-                Vector2D reversedVelocity = new Vector2D(-velocity.getX(), -velocity.getY());
-                velocity = velocity.add(reversedVelocity.normalize().scale(0.01f));
+
+            // Limitar la velocidad si excede la máxima
+            if (velocity.getMagnitudeSq() >= maxVel * maxVel) {
+                velocity = velocity.add(velocity.normalize().scale(-0.01f)); // ligera desaceleración
             }
 
             velocity = velocity.limit(Constants.METEOR_MAX_VEL);
-
             position = position.add(velocity);
         }
-        angle += Constants.DELTAANGLE/2;
 
+        angle += Constants.DELTAANGLE / 2;
     }
 
+    private Vector2D fleeForce(Vector2D meteorCenter, Vector2D playerCenter) {
+        Vector2D desiredVelocity = playerCenter.subtract(meteorCenter).normalize().scale(Constants.METEOR_MAX_VEL);
+        return velocity.subtract(desiredVelocity);
+    }
+
+    // Sobrecarga para compatibilidad si no se pasan parámetros
     private Vector2D fleeForce() {
-        Vector2D desiredVelocity = gameState.getPlayer().getCenter().subtract(getCenter());
-        desiredVelocity = (desiredVelocity.normalize()).scale(Constants.METEOR_MAX_VEL);
-        Vector2D v = new Vector2D(velocity);
-        return v.subtract(desiredVelocity);
+        return fleeForce(getCenter(), gameState.getPlayer().getCenter());
     }
 
     @Override
-    public void Destroy(int da){
+    public void Destroy(int da) {
         resistencia -= da;
-        if(resistencia < 1){
+        if (resistencia <= 0) {
             gameState.divideMeteor(this);
             gameState.playExplosion(position);
             gameState.addScore(Constants.METEOR_SCORE, position);
@@ -73,7 +73,7 @@ public class Meteor extends MovingObject{
     }
 
     @Override
-    public void Destroy(){
+    public void Destroy() {
         gameState.divideMeteor(this);
         gameState.playExplosion(position);
         gameState.addScore(Constants.METEOR_SCORE, position);
@@ -82,18 +82,13 @@ public class Meteor extends MovingObject{
 
     @Override
     public void draw(Graphics g) {
-
-        Graphics2D g2d = (Graphics2D)g;
-
-        at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
-
-        at.rotate(angle, width/2, height/2);
-
+        Graphics2D g2d = (Graphics2D) g;
+        AffineTransform at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
+        at.rotate(angle, width / 2.0, height / 2.0);
         g2d.drawImage(texture, at, null);
-
     }
 
-    public Size getSize(){
+    public Size getSize() {
         return size;
     }
 }
