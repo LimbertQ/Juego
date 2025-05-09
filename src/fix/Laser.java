@@ -44,7 +44,7 @@ public class Laser extends MovingObject{
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D)g;
 
-        at = AffineTransform.getTranslateInstance(position.getX() - width/2, position.getY());
+        AffineTransform at = AffineTransform.getTranslateInstance(position.getX() - width/2, position.getY());
 
         at.rotate(angle, width/2, 0);
 

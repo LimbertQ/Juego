@@ -11,55 +11,37 @@ package fix;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
 
 import io.NaveDB;
 import io.Assets;
 import io.ProyectilDB;
-public class Ufo extends MovingObject{
+
+public class Ufo extends MovingObject {
     private final ProyectilDB proyectil;
+    private final Sound shoot;
 
     private long fireRate;
-    private int totalLaserCount = 0;
 
-    private Sound shoot;
-
-    public Ufo(Vector2D position, Vector2D velocity, double maxVel, NaveDB textura,
-           GameState gameState) {
+    public Ufo(Vector2D position, Vector2D velocity, double maxVel, NaveDB textura, GameState gameState) {
         super(position, velocity, maxVel, textura, gameState);
-        fireRate = 0;
-        shoot = new Sound(Assets.ufoShoot);
-
-        proyectil = textura.getProyectil();
+        this.proyectil = textura.getProyectil();
+        this.shoot = new Sound(Assets.ufoShoot);
+        this.fireRate = 0;
     }
-
-    
 
     @Override
     public void update(float dt) {
-
         fireRate += dt;
-        
-        if(!containsBlackHole() && !isDead()){
-            //atacarFrontal(gameState.getPlayer(), dt);
-            atacarPorFlancos(gameState.getPlayer(), dt);
-            //formarDefensiva(dt);
-            }
 
-            if(shoot.getFramePosition() > 8500) {
-                shoot.stop();
-            }
-            //angle += 0.05;
-        //}
+        if (!containsBlackHole() && !isDead()) {
+            atacarPorFlancos(gameState.getPlayer(), dt);
+            // formarDefensiva(dt); // Habilita si quieres
+        }
+
+        if (shoot.getFramePosition() > 8500) shoot.stop();
     }
-    
+
     private void disparar(Vector2D direccion) {
-        //System.out.println("disparo");
-        /*
-        double currentAngle = direccion.getAngle();
-        
-        if(direccion.getX() < 0)
-           currentAngle = -currentAngle + Math.PI;*/
         Laser laser = new Laser(
             getCenter().add(direccion.scale(width)),
             direccion,
@@ -68,114 +50,64 @@ public class Ufo extends MovingObject{
             proyectil,
             gameState
         );
-            
-        gameState.getMovingObjects().add(laser);    
+        gameState.getMovingObjects().add(laser);
+        shoot.play();
     }
-    
-    /**
-     * Implementación de táctica: ataque directo hacia el jugador
-     */
-    private void atacarFrontal(Player jugador, float dt) {
-        // Calcular dirección hacia el jugador
-        Vector2D direccionJugador = jugador.getCenter().subtract(getCenter()).normalize();
-        
-        // Ajustar velocidad hacia el jugador
-        velocity = direccionJugador.scale(maxVel * 0.05f);
-        
-        // Actualizar posición
-        position = position.add(velocity.scale(dt));
-        
-        // Apuntar hacia el jugador (ajustar ángulo)
-        angle = velocity.getAngle();
-        if(velocity.getX() < 0)
-           angle = -angle+Math.PI;
-        angle+=Math.PI/2;
-        // Disparar si estamos apuntando al jugador y ha pasado suficiente tiempo
-        if (fireRate > Constants.UFO_FIRE_RATE * 0.8) {
-            disparar(direccionJugador);
-            fireRate = 0;
-        }
-    }
-    
-    /**
-     * Implementación de táctica: atacar desde los laterales del jugador
-     */
+
     private void atacarPorFlancos(Player jugador, float dt) {
-        // Vector desde jugador a nave
-        Vector2D jugadorANave = getCenter().subtract(jugador.getCenter());
-        
-        // Vector perpendicular (lateral) al jugador
+        Vector2D ufoCenter = getCenter();
+        Vector2D jugadorCenter = jugador.getCenter();
+
+        Vector2D jugadorANave = ufoCenter.subtract(jugadorCenter);
         Vector2D lateral = new Vector2D(-jugadorANave.getY(), jugadorANave.getX()).normalize();
-        
-        // Si estamos demasiado cerca, alejarnos
         double distancia = jugadorANave.getMagnitude();
+
         Vector2D direccionDeseada;
-        
-        
         if (distancia < 100) {
-            // Alejarse un poco
             direccionDeseada = jugadorANave.add(lateral).normalize();
         } else if (distancia > 150) {
-            // Acercarse desde el lateral
             direccionDeseada = jugadorANave.scale(-1).add(lateral).normalize();
         } else {
-            // Mantener posición lateral
             direccionDeseada = lateral;
         }
-        
-        // Actualizar velocidad y posición
+
         velocity = direccionDeseada.scale(maxVel * 0.05f);
         position = position.add(velocity.scale(dt));
-        
-        // Apuntar hacia el jugador (ajustar ángulo)
-        Vector2D an = jugador.getCenter().subtract(getCenter()).normalize().scale(maxVel * 0.05f);;
-        angle = an.getAngle();
-        if(an.getX() < 0)
-           angle = -angle+Math.PI;
-        angle+=Math.PI/2;
-        
-        // Disparar cuando tengamos línea de visión clara
+
+        apuntarAJugador(jugadorCenter);
+
         if (fireRate > Constants.UFO_FIRE_RATE && distancia < 350) {
-            
-            disparar(jugador.getCenter().subtract(getCenter()).normalize());
+            disparar(jugadorCenter.subtract(ufoCenter).normalize());
             fireRate = 0;
         }
     }
-    
-    /**
-     * Implementación de táctica: mantener distancia y posición defensiva
-     */
+
+    private void apuntarAJugador(Vector2D jugadorCenter) {
+        Vector2D direccion = jugadorCenter.subtract(getCenter()).normalize();
+        angle = direccion.getAngle();
+        if (direccion.getX() < 0) angle = -angle + Math.PI;
+        angle += Math.PI / 2;
+    }
+
     private void formarDefensiva(float dt) {
-        // Buscar posición segura (lejos del jugador, cerca del borde)
-        Vector2D centroJuego = new Vector2D(Constants.WIDTH/2, Constants.HEIGHT/2);
-        Vector2D direccionBorde = getCenter().subtract(centroJuego).normalize();
-        
-        // Determinar distancia óptima del borde
-        float distanciaBorde = 100;
-        Vector2D posicionObjetivo = centroJuego.add(direccionBorde.scale(Constants.WIDTH/2 - distanciaBorde));
-        
-        // Vector hacia la posición objetivo
-        Vector2D haciaPosicion = posicionObjetivo.subtract(getCenter());
+        Vector2D centroJuego = new Vector2D(Constants.WIDTH / 2.0, Constants.HEIGHT / 2.0);
+        Vector2D ufoCenter = getCenter();
+        Vector2D direccionBorde = ufoCenter.subtract(centroJuego).normalize();
+        Vector2D posicionObjetivo = centroJuego.add(direccionBorde.scale(Constants.WIDTH / 2.0 - 100));
+
+        Vector2D haciaPosicion = posicionObjetivo.subtract(ufoCenter);
         double distancia = haciaPosicion.getMagnitude();
-        
-        // Si estamos lejos de la posición objetivo, movernos hacia ella
+
         if (distancia > 50) {
             velocity = haciaPosicion.normalize().scale(maxVel * 0.05f);
         } else {
-            // De lo contrario, movernos en círculos
-            velocity = new Vector2D(
-                -direccionBorde.getY(),
-                direccionBorde.getX()
-            ).scale(maxVel * 0.3f);
+            velocity = new Vector2D(-direccionBorde.getY(), direccionBorde.getX()).scale(maxVel * 0.3f);
         }
-        
-        // Actualizar posición
+
         position = position.add(velocity.scale(dt));
-        
-        // Disparar ocasionalmente hacia el centro del juego
+
         if (fireRate > Constants.UFO_FIRE_RATE * 1.2) {
-            Vector2D direccionDisparo = centroJuego.subtract(getCenter()).normalize();
-            disparar(direccionDisparo);
+            disparar(centroJuego.subtract(ufoCenter).normalize());
             fireRate = 0;
         }
     }
@@ -183,7 +115,7 @@ public class Ufo extends MovingObject{
     @Override
     public void Destroy(int da) {
         resistencia -= da;
-        if(resistencia < 1){
+        if (resistencia < 1) {
             gameState.addScore(Constants.UFO_SCORE, position);
             gameState.playExplosion(position);
             super.Destroy();
@@ -199,15 +131,9 @@ public class Ufo extends MovingObject{
 
     @Override
     public void draw(Graphics g) {
-
-        Graphics2D g2d = (Graphics2D)g;
-
-        at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
-
-        at.rotate(angle, width/2, height/2);
-
+        Graphics2D g2d = (Graphics2D) g;
+        AffineTransform at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
+        at.rotate(angle, width / 2.0, height / 2.0);
         g2d.drawImage(texture, at, null);
-
     }
-
 }

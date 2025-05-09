@@ -9,101 +9,86 @@ package fix;
  * @author pc
  */
 import java.awt.Graphics;
-import io.Assets;
+import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.awt.Graphics2D;
 import java.util.ArrayList;
-public class BlackHole{
-    private Vector2D position;
-    private BufferedImage texture;
-    private GameState gameState;
+
+public class BlackHole {
+    private final Vector2D position;
+    private final BufferedImage texture;
+    private final GameState gameState;
+
+    private final int width, height;
+    private final double radio, nucleo;
+
+    private final Vector2D center;
     private double angle;
-    protected int width;
-    protected int height;
-    protected double radio;
-    protected double nucleo;
-    protected AffineTransform at;
-    protected Vector2D center;
-    private long absor;
-    //private ArrayList<MovingObject> objectsToRemove = new ArrayList<>();
-    public BlackHole(BufferedImage texture, GameState gameState){
-        position = new Vector2D(100,100);
-        angle = 0;
+
+    public BlackHole(BufferedImage texture, GameState gameState) {
         this.texture = texture;
-        width = texture.getWidth();
-        height = texture.getHeight();
-        radio = height/2;
-        nucleo = 80;
-        absor = 0;
         this.gameState = gameState;
-        center = new Vector2D(position.getX() + width/2, position.getY() + height/2);
+        this.position = new Vector2D(100, 100);
+        this.width = texture.getWidth();
+        this.height = texture.getHeight();
+        this.radio = height / 2.0;
+        this.nucleo = 80.0;
+        this.center = new Vector2D(position.getX() + width / 2.0, position.getY() + height / 2.0);
+        this.angle = 0;
     }
 
-    public Vector2D getCenter(){
-        return new Vector2D(position.getX() + width/2, position.getY() + height/2);
+    public Vector2D getCenter() {
+        return new Vector2D(center.getX(), center.getY()); // devolver copia para seguridad
     }
 
-    public double getRadio(){
+    public double getRadio() {
         return radio;
     }
-    
-    private boolean playerIsSpawning(MovingObject a){
-        boolean spawning = false;
-        if((a instanceof Player) && ((Player) a).isSpawning()){
-                spawning = true;
-        }
-        return spawning;
+
+    private boolean playerIsSpawning(MovingObject obj) {
+        return (obj instanceof Player) && ((Player) obj).isSpawning();
     }
 
     public void update(float dt) {
-        
-            //objectsToRemove.clear();
-            ArrayList<MovingObject> movingObjects = gameState.getMovingObjects();
-            for (int i = 0; i < movingObjects.size(); i++) {
-                MovingObject o = movingObjects.get(i);
-                Vector2D oCenter = o.getCenter();
-                double distanceToNode = oCenter.subtract(center).getMagnitude();
+        ArrayList<MovingObject> objects = gameState.getMovingObjects();
 
-                if (distanceToNode < nucleo || (distanceToNode < radio && o instanceof Laser)) {
-                    o.Destroy();
-                    if(!playerIsSpawning(o)){
-                        movingObjects.remove(i);
-                        i--;
-                    }
-                } else if (distanceToNode < radio) {
-                    
-                        double fuerzaAtraccion = 0.01; // Atracción extremadamente lenta
-                        double velocidadAngular = -0.01;  // Rotación rápida
-                        
-                        double anguloActual = Math.atan2(oCenter.getY() - center.getY(), oCenter.getX() - center.getX());
-                        double nuevoAngulo = anguloActual + velocidadAngular * dt;
+        for (int i = 0; i < objects.size(); i++) {
+            MovingObject o = objects.get(i);
+            Vector2D oCenter = o.getCenter();
+            double dist = oCenter.subtract(center).getMagnitude();
 
-                        double nuevaDistancia = distanceToNode - fuerzaAtraccion * dt;
-                        if (nuevaDistancia < 0) nuevaDistancia = 0;
-
-                        double nuevoX = center.getX() + nuevaDistancia * Math.cos(nuevoAngulo);
-                        double nuevoY = center.getY() + nuevaDistancia * Math.sin(nuevoAngulo);
-
-                        //o.getPosition().set(nuevoX - o.width / 2, nuevoY - o.height / 2);
-                        o.blackHole(nuevoX - o.width / 2,nuevoY - o.height / 2);
-                        //o.setContainsBlackHole(true); // Marcar AL MENOS UNA VEZ que entra al radio
+            if (dist < nucleo || (dist < radio && o instanceof Laser)) {
+                o.Destroy();
+                if (!playerIsSpawning(o)) {
+                    objects.remove(i);
+                    i--;
                 }
-
+            } else if (dist < radio) {
+                applyGravitationalPull(o, oCenter, dist, dt);
             }
-            
-        
+        }
+
         angle -= 0.01;
-        //return objectsToRemove;
     }
 
-    public void draw(Graphics g){
-        Graphics2D g2d = (Graphics2D)g;
+    private void applyGravitationalPull(MovingObject o, Vector2D oCenter, double distance, float dt) {
+        final double attraction = 0.02;
+        final double angularSpeed = -0.01;
 
-        at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
+        double angleActual = Math.atan2(oCenter.getY() - center.getY(), oCenter.getX() - center.getX());
+        double newAngle = angleActual + angularSpeed * dt;
 
-        at.rotate(angle, width/2, height/2);
+        double newDist = Math.max(0, distance - attraction * dt);
+        double newX = center.getX() + newDist * Math.cos(newAngle);
+        double newY = center.getY() + newDist * Math.sin(newAngle);
 
+        o.blackHole(newX - o.width / 2.0, newY - o.height / 2.0);
+    }
+
+    public void draw(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        AffineTransform at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
+        at.rotate(angle, width / 2.0, height / 2.0);
         g2d.drawImage(texture, at, null);
     }
 }

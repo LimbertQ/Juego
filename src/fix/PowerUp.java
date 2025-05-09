@@ -54,7 +54,7 @@ public class PowerUp extends MovingObject {
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
-        at = AffineTransform.getTranslateInstance(
+        AffineTransform at = AffineTransform.getTranslateInstance(
             position.getX() + Assets.orb.getImagen().getWidth()/2 - typeTexture.getWidth()/2,
             position.getY() + Assets.orb.getImagen().getHeight()/2 - typeTexture.getHeight()/2);
 
