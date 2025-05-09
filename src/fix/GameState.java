@@ -19,7 +19,6 @@ import io.MeteoroDB;
 public class GameState extends State{
 
     private final Player player;
-    private final BotonCanvas boton;
     private final ArrayList<MovingObject> movingObjects = new ArrayList<>();
     private final ArrayList<MovingObject> objectsToRemove = new ArrayList<>();
     private final ArrayList<PowerUp> powerUps = new ArrayList<>();
@@ -46,7 +45,12 @@ public class GameState extends State{
         backgroundMusic.changeVolume(6.0f);
 
         ufoSound = new Sound(Assets.ufoSound);
-        boton = new BotonCanvas();
+    }
+    
+    private void closingWindow(){
+        if (KeyBoard.ESC) {
+            System.exit(0);
+        }
     }
 
     public void addScore(int value, Vector2D pos) {
@@ -264,7 +268,7 @@ public class GameState extends State{
     //------------------------------------------------
     @Override
     public void update(float dt) {
-        boton.actualizar();
+        closingWindow();
         if (gameOver) gameOverTimer += dt;
 
         powerUpSpawner += dt;
@@ -291,7 +295,6 @@ public class GameState extends State{
         g.drawImage(Assets.fondo, 0, 0, Constants.WIDTH, Constants.HEIGHT, null);
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-        boton.dibujar(g);
         blackHole.draw(g);
 
         for (Message msg : messages) msg.draw(g2d);

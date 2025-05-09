@@ -17,7 +17,7 @@ public class KeyBoard implements KeyListener{
     private boolean[] keys = new boolean[256];
     private boolean[] pressedKeys = new boolean[256]; // Para teclas recién presionadas
     
-    public static boolean UP, LEFT, RIGHT, SHOOT;
+    public static boolean UP, LEFT, RIGHT, SHOOT, ESC;
     public static boolean SHOOT_PRESSED; // Tecla recién presionada
     
     public KeyBoard(){ 
@@ -25,6 +25,7 @@ public class KeyBoard implements KeyListener{
         LEFT  = false;
         RIGHT = false;
         SHOOT = false;
+        ESC   = false;
         SHOOT_PRESSED = false;
     } 
     
@@ -33,7 +34,7 @@ public class KeyBoard implements KeyListener{
         LEFT = keys[KeyEvent.VK_LEFT];
         RIGHT = keys[KeyEvent.VK_RIGHT];
         SHOOT = keys[KeyEvent.VK_P];
-        
+        ESC   = keys[KeyEvent.VK_ESCAPE];
          // Detectar pulsación única
         if(keys[KeyEvent.VK_P] && !pressedKeys[KeyEvent.VK_P]) {
             SHOOT_PRESSED = true;
