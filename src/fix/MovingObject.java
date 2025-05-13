@@ -10,7 +10,6 @@ package fix;
  */
 import io.ObjetoDB;
 import io.Assets;
-import java.awt.geom.AffineTransform;
 public abstract class MovingObject extends GameObject {
 
     //protected AffineTransform at;

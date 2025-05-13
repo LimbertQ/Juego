@@ -20,7 +20,7 @@ public class Assets {
     public static float count = 0;
     public static final float MAX_COUNT = 58;
 
-    public static BufferedImage fondo, speed, blackHole;
+    public static BufferedImage fondo, speed, blackHole, pulsar;
     public static BufferedImage[] shieldEffect = new BufferedImage[3];
     public static BufferedImage[] exp = new BufferedImage[9];
     public static BufferedImage[] numbers = new BufferedImage[11];
@@ -48,8 +48,8 @@ public class Assets {
     public static void inicia() {
         fondo = loadImage("/res/fondos/fondo2.jpeg");
         speed = loadImage("/res/efectos/fire08.png");
+        pulsar = loadImage("/res/agujeroNegro/pulsarrr.png");
         blackHole = loadImage("/res/agujeroNegro/blackHole20.png");
-
         backgroundMusic = loadSound("/res/sonidos/fondoMu.wav");
         explosion = loadSound("/res/sonidos/explosion.wav");
         playerLoose = loadSound("/res/sonidos/playerLoose.wav");

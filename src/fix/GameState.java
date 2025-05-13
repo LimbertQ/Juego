@@ -29,6 +29,7 @@ public class GameState extends State{
     private final Sound ufoSound;
 
     private final BlackHole blackHole;
+    private final Pulsar pulsar;
 
     private int score = 0, lives = 300, meteors = 1, waves = 1;
     private long gameOverTimer = 0, ufoSpawner = 0, powerUpSpawner = 0;
@@ -39,7 +40,8 @@ public class GameState extends State{
         player = new Player(null, new Vector2D(), Constants.PLAYER_MAX_VEL, Assets.aliados.get(0), this);
         movingObjects.add(player);
         blackHole = new BlackHole(Assets.blackHole, this);
-
+        pulsar = new Pulsar(Assets.pulsar,this);
+        
         backgroundMusic = new Sound(Assets.backgroundMusic);
         backgroundMusic.loop();
         backgroundMusic.changeVolume(6.0f);
@@ -276,6 +278,8 @@ public class GameState extends State{
         objectsToRemove.clear();
 
         blackHole.update(dt);
+        pulsar.update(dt);
+        
         checkPowerUpCollisions();
 
         updatePowerUps(dt);
@@ -296,6 +300,7 @@ public class GameState extends State{
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
         blackHole.draw(g);
+        pulsar.draw(g);
 
         for (Message msg : messages) msg.draw(g2d);
         messages.removeIf(Message::isDead);

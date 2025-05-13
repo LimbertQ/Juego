@@ -11,32 +11,20 @@ package fix;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-
-import io.Assets;
 import io.ProyectilDB;
 
 public class Laser extends MovingObject{
-    private Vector2D heading;
     public Laser(Vector2D position, Vector2D velocity, double maxVel, double angle, ProyectilDB texture, GameState gameState) {
         super(position, velocity, maxVel, texture, gameState);
         this.angle = angle;
         this.velocity = velocity.scale(maxVel);
-        heading = new Vector2D(0, 1);
     }
 
     @Override
     public void update(float dt) {
         if(!containsBlackHole()){
             position = position.add(velocity);
-            /*
-            if(position.getX() < 0 || position.getX() > Constants.WIDTH ||
-            position.getY() < 0 || position.getY() > Constants.HEIGHT){
-                Destroy();
-            }*/
         }
-
-        //collidesWith();
 
     }
 

@@ -19,7 +19,7 @@ import io.ProyectilDB;
 
 public class Player extends MovingObject {
 
-    private ProyectilDB proyectil;
+    private final ProyectilDB proyectil;
     private Vector2D heading;
     private Vector2D acceleration;
 
@@ -33,8 +33,8 @@ public class Player extends MovingObject {
     private long spawnTime, flickerTime, shieldTime, doubleScoreTime, fastFireTime, doubleGunTime;
     private boolean shieldOn, doubleScoreOn, fastFireOn, doubleGunOn;
 
-    private Sound shoot, loose;
-    private Animation shieldEffect;
+    private final Sound shoot, loose;
+    private final Animation shieldEffect;
 
     private final Vector2D PLAYER_START_POSITION;
 
