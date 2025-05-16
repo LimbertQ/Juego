@@ -46,7 +46,7 @@ public class PowerUp extends MovingObject {
             this.Destroy();
         }
 
-        //collidesWith();
+        //hola mundo
 
     }
 
